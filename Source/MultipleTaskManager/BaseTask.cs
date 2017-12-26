@@ -37,12 +37,13 @@ namespace MultipleTaskManager
             }
         }
 
+        protected virtual int AutoRefreshTriggerCount => 1;
         protected virtual bool TryGetNextTaskUID(out TKey taskUID)
         {
             taskUID = default(TKey);
             lock (m_Locker)
             {
-                if (m_TaskUIDList.Count <= 1)
+                if (m_TaskUIDList.Count <= this.AutoRefreshTriggerCount)
                 {
                     ThreadPool.QueueUserWorkItem(x => { this.RefreshTaskUIDList(); });
                 }
