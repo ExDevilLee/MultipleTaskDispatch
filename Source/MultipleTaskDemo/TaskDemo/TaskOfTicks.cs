@@ -13,7 +13,8 @@ namespace MultipleTaskDemo
         public TaskOfTicks(int taskCount) : base(taskCount)
         { }
 
-        protected override int AutoRefreshTriggerCount => 2;
+        protected override uint AutoRefreshTriggerCount => 2;
+
         protected override IList<string> GetTaskUIDList(int top)
         {
             IList<string> list = new List<string>(top);

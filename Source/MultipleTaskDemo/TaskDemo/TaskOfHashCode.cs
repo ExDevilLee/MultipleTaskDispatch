@@ -13,6 +13,8 @@ namespace MultipleTaskDemo
         public TaskOfHashCode(int taskCount) : base(taskCount)
         { }
 
+        protected override uint MinRefreshMilliseconds => 3000;
+
         protected override IList<string> GetTaskUIDList(int top)
         {
             IList<string> list = new List<string>(top);

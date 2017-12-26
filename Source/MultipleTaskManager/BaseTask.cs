@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace MultipleTaskManager
@@ -12,16 +13,26 @@ namespace MultipleTaskManager
         public abstract string TaskTypeName { get; }
         public int TaskCount { get; }
 
+        private Stopwatch m_StopwatchForRefresh = new Stopwatch();
         protected BaseTask(int taskCount)
         {
             this.TaskCount = taskCount;
+            m_StopwatchForRefresh.Start();
             ThreadPool.QueueUserWorkItem(x => { this.RefreshTaskUIDList(); });
         }
 
         protected abstract IList<TKey> GetTaskUIDList(int top);
 
+        private readonly object m_LockerForRefresh = new object();
+        protected virtual uint MinRefreshMilliseconds => 2000;
         public void RefreshTaskUIDList()
         {
+            lock (m_LockerForRefresh)
+            {
+                if (m_StopwatchForRefresh.Elapsed.TotalMilliseconds <= this.MinRefreshMilliseconds) return;
+                m_StopwatchForRefresh.Restart();
+            }
+
             IList<TKey> taskList = this.GetTaskUIDList(this.TaskCount);
             if (null == taskList || taskList.Count == 0) return;
 
@@ -37,7 +48,7 @@ namespace MultipleTaskManager
             }
         }
 
-        protected virtual int AutoRefreshTriggerCount => 1;
+        protected virtual uint AutoRefreshTriggerCount => 1;
         protected virtual bool TryGetNextTaskUID(out TKey taskUID)
         {
             taskUID = default(TKey);
