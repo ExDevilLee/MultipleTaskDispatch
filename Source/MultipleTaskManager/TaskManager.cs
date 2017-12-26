@@ -10,20 +10,53 @@ namespace MultipleTaskManager
         private int m_ThreadCount;
         private IDictionary<string, ITask> m_TaskList = new Dictionary<string, ITask>();
 
+        private int m_IntervalOfAutoRefreshSeconds = 10;
+        public int IntervalOfAutoRefreshSeconds
+        {
+            get { return m_IntervalOfAutoRefreshSeconds; }
+            set
+            {
+                if (value <= 0) throw new ArgumentOutOfRangeException(paramName: nameof(value),
+                    message: $"{nameof(IntervalOfAutoRefreshSeconds)}'s value must be greater than zero.");
+                m_IntervalOfAutoRefreshSeconds = value;
+            }
+        }
+
+        private int m_IntervalOfTaskMilliseconds = 100;
+        public int IntervalOfTaskMilliseconds
+        {
+            get { return m_IntervalOfTaskMilliseconds; }
+            set
+            {
+                if (value <= 0) throw new ArgumentOutOfRangeException(paramName: nameof(value),
+                    message: $"{nameof(IntervalOfTaskMilliseconds)}'s value must be greater than zero.");
+                m_IntervalOfTaskMilliseconds = value;
+            }
+        }
+
         public TaskManager(int threadCount)
         {
             if (threadCount < 1) threadCount = 1;
             m_ThreadCount = threadCount;
         }
-
-        public void RegisterTask(ITask task)
+        public TaskManager(int threadCount, params ITask[] tasks)
+            : this(threadCount)
         {
-            if (null == task) throw new ArgumentNullException(nameof(task));
+            this.RegisterTask(tasks);
+        }
+
+        public void RegisterTask(params ITask[] tasks)
+        {
+            if (null == tasks || tasks.Length == 0) return;
 
             lock (m_Locker)
             {
-                if (!m_TaskList.ContainsKey(task.TaskTypeName))
-                    m_TaskList.Add(task.TaskTypeName, task);
+                foreach (var task in tasks)
+                {
+                    if (null == task) continue;
+                    if (!m_TaskList.ContainsKey(task.TaskTypeName))
+                        m_TaskList.Add(task.TaskTypeName, task);
+                }
             }
         }
 
@@ -31,27 +64,24 @@ namespace MultipleTaskManager
         {
             for (int i = 0; i < m_ThreadCount; i++)
             {
-                Thread t = new Thread(this.StartOneThread);
-                t.IsBackground = true;
-                t.Start();
+                new Thread(this.StartOneThread) { IsBackground = true }.Start();
             }
-            Thread t2 = new Thread(this.RefreshAllTaskUIDList);
-            t2.IsBackground = true;
-            t2.Start();
+            new Thread(this.RefreshAllTaskUIDList) { IsBackground = true }.Start();
         }
         private void StartOneThread()
         {
             while (true)
             {
-                ITask task = this.GetRandomTask();
-                if (null != task) task.DoNextTask();
-                Thread.Sleep(100);
+                this.GetRandomTask()?.DoNextTask();
+                Thread.Sleep(this.IntervalOfTaskMilliseconds);
             }
         }
         private void RefreshAllTaskUIDList()
         {
             while (true)
             {
+                Thread.Sleep(this.IntervalOfAutoRefreshSeconds * 1000);
+
                 lock (m_Locker)
                 {
                     foreach (var item in m_TaskList)
@@ -59,19 +89,21 @@ namespace MultipleTaskManager
                         ThreadPool.QueueUserWorkItem(x => { item.Value.RefreshTaskUIDList(); });
                     }
                 }
-                Thread.Sleep(10 * 1000);
             }
         }
 
-        private Random m_Random = new Random();
+        private static Random m_Random = new Random(new object().GetHashCode());
         private ITask GetRandomTask()
         {
             ITask task = null;
             lock (m_Locker)
             {
                 IList<string> list = new List<string>(m_TaskList.Keys);
-                string randomKey = list[m_Random.Next(list.Count)];
-                task = m_TaskList[randomKey];
+                if (list.Count > 0)
+                {
+                    string randomKey = list[m_Random.Next(list.Count)];
+                    task = m_TaskList[randomKey];
+                }
             }
             return task;
         }

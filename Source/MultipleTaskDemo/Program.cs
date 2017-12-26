@@ -7,10 +7,12 @@ namespace MultipleTaskDemo
     {
         static void Main(string[] args)
         {
-            TaskManager mgr = new TaskManager(20);
-            mgr.RegisterTask(new TaskOfGuid(5));
-            mgr.RegisterTask(new TaskOfHashCode(5));
-            mgr.RegisterTask(new TaskOfTicks(10));
+            TaskManager mgr = new TaskManager(20)
+            {
+                IntervalOfAutoRefreshSeconds = 30,
+                IntervalOfTaskMilliseconds = 200
+            };
+            mgr.RegisterTask(new TaskOfGuid(5), new TaskOfHashCode(5), new TaskOfTicks(10));
             mgr.Start();
 
             Console.ReadKey();
