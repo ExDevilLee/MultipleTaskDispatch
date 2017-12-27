@@ -27,13 +27,13 @@ namespace MultipleTaskManager
         protected virtual uint MinRefreshMilliseconds => 2000;
         public void RefreshTaskUIDList()
         {
+            IList<TKey> taskList = null;
             lock (m_LockerForRefresh)
             {
                 if (m_StopwatchForRefresh.Elapsed.TotalMilliseconds <= this.MinRefreshMilliseconds) return;
+                taskList = this.GetTaskUIDList(this.TaskCount);
                 m_StopwatchForRefresh.Restart();
             }
-
-            IList<TKey> taskList = this.GetTaskUIDList(this.TaskCount);
             if (null == taskList || taskList.Count == 0) return;
 
             lock (m_Locker)
