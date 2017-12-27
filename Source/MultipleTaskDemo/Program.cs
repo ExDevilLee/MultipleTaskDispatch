@@ -12,7 +12,7 @@ namespace MultipleTaskDemo
                 IntervalOfAutoRefreshSeconds = 30,
                 IntervalOfTaskMilliseconds = 200
             };
-            mgr.RegisterTask(new TaskOfGuid(5), new TaskOfHashCode(5), new TaskOfTicks(10));
+            mgr.RegisterTask(new TaskOfGuid(5), new TaskOfHashCode(5), new TaskOfTicks(10), new TaskOfCompoundKey(10));
             mgr.Start();
 
             Console.ReadKey();

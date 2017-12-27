@@ -17,6 +17,7 @@ namespace MultipleTaskDemo
 
         protected override IList<string> GetTaskUIDList(int top)
         {
+            System.Threading.Thread.Sleep(500);
             IList<string> list = new List<string>(top);
             for (int i = 0; i < top; i++)
             {
