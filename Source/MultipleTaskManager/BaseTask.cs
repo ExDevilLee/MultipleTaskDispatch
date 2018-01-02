@@ -23,21 +23,20 @@ namespace MultipleTaskManager
 
         protected abstract IList<TKey> GetTaskUIDList(int top);
 
-        private readonly object m_LockerForRefresh = new object();
         protected virtual uint MinRefreshMilliseconds => 2000;
         public void RefreshTaskUIDList()
         {
-            IList<TKey> taskList = null;
-            lock (m_LockerForRefresh)
-            {
-                if (m_StopwatchForRefresh.Elapsed.TotalMilliseconds <= this.MinRefreshMilliseconds) return;
-                taskList = this.GetTaskUIDList(this.TaskCount);
-                m_StopwatchForRefresh.Restart();
-            }
-            if (null == taskList || taskList.Count == 0) return;
-
             lock (m_Locker)
             {
+                if (m_StopwatchForRefresh.Elapsed.TotalMilliseconds <= this.MinRefreshMilliseconds) return;
+
+                IList<TKey> taskList = this.GetTaskUIDList(this.TaskCount);
+                if (null == taskList || taskList.Count == 0)
+                {
+                    m_StopwatchForRefresh.Restart();
+                    return;
+                }
+
                 foreach (var uid in taskList)
                 {
                     if (!TKeyIsValueType && null == uid) continue;
@@ -45,6 +44,7 @@ namespace MultipleTaskManager
                     m_TaskUIDList.Add(uid, false);
                     if (m_TaskUIDList.Count >= this.TaskCount) break;
                 }
+                m_StopwatchForRefresh.Restart();
             }
         }
 
