@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Linq;
 
 namespace MultipleTaskManager
 {
@@ -11,12 +12,22 @@ namespace MultipleTaskManager
         private static bool TKeyIsValueType => typeof(TKey).IsValueType;
 
         public abstract string TaskTypeName { get; }
-        public int TaskCount { get; }
+        public int MaxTaskCount { get; }
+        public int RemainTaskCount
+        {
+            get
+            {
+                lock (m_Locker)
+                {
+                    return m_TaskUIDList.Where(x => !x.Value).ToArray().Length;
+                }
+            }
+        }
 
         private Stopwatch m_StopwatchForRefresh = new Stopwatch();
-        protected BaseTask(int taskCount)
+        protected BaseTask(int maxTaskCount)
         {
-            this.TaskCount = taskCount;
+            this.MaxTaskCount = maxTaskCount;
             m_StopwatchForRefresh.Start();
             ThreadPool.QueueUserWorkItem(x => { this.RefreshTaskUIDList(); });
         }
@@ -30,7 +41,7 @@ namespace MultipleTaskManager
             {
                 if (m_StopwatchForRefresh.Elapsed.TotalMilliseconds <= this.MinRefreshMilliseconds) return;
 
-                IList<TKey> taskList = this.GetTaskUIDList(this.TaskCount);
+                IList<TKey> taskList = this.GetTaskUIDList(this.MaxTaskCount);
                 if (null == taskList || taskList.Count == 0)
                 {
                     m_StopwatchForRefresh.Restart();
@@ -42,7 +53,7 @@ namespace MultipleTaskManager
                     if (!TKeyIsValueType && null == uid) continue;
                     if (m_TaskUIDList.ContainsKey(uid)) continue;
                     m_TaskUIDList.Add(uid, false);
-                    if (m_TaskUIDList.Count >= this.TaskCount) break;
+                    if (m_TaskUIDList.Count >= this.MaxTaskCount) break;
                 }
                 m_StopwatchForRefresh.Restart();
             }

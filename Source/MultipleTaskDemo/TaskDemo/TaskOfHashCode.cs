@@ -10,7 +10,7 @@ namespace MultipleTaskDemo
     {
         public override string TaskTypeName => nameof(TaskOfHashCode);
 
-        public TaskOfHashCode(int taskCount) : base(taskCount)
+        public TaskOfHashCode(int maxTaskCount) : base(maxTaskCount)
         { }
 
         protected override uint MinRefreshMilliseconds => 3000;

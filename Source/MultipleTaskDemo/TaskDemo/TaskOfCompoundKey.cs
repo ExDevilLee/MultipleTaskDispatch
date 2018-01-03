@@ -42,7 +42,7 @@ namespace MultipleTaskDemo
     {
         public override string TaskTypeName => nameof(TaskOfCompoundKey);
 
-        public TaskOfCompoundKey(int taskCount) : base(taskCount)
+        public TaskOfCompoundKey(int maxTaskCount) : base(maxTaskCount)
         { }
 
         protected override uint AutoRefreshTriggerCount => 2;

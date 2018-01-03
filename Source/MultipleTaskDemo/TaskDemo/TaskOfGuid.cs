@@ -10,7 +10,7 @@ namespace MultipleTaskDemo
     {
         public override string TaskTypeName => nameof(TaskOfGuid);
 
-        public TaskOfGuid(int taskCount) : base(taskCount)
+        public TaskOfGuid(int maxTaskCount) : base(maxTaskCount)
         { }
 
         protected override IList<string> GetTaskUIDList(int top)

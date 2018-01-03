@@ -10,7 +10,7 @@ namespace MultipleTaskDemo
     {
         public override string TaskTypeName => nameof(TaskOfTicks);
 
-        public TaskOfTicks(int taskCount) : base(taskCount)
+        public TaskOfTicks(int maxTaskCount) : base(maxTaskCount)
         { }
 
         protected override uint AutoRefreshTriggerCount => 2;
