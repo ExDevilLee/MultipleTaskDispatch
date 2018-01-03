@@ -45,8 +45,6 @@ namespace MultipleTaskDemo
         public TaskOfCompoundKey(int maxTaskCount) : base(maxTaskCount)
         { }
 
-        protected override uint AutoRefreshTriggerCount => 2;
-
         protected override IList<CompoundKey> GetTaskUIDList(int top)
         {
             System.Threading.Thread.Sleep(3000);

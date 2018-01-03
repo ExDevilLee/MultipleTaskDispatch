@@ -13,8 +13,6 @@ namespace MultipleTaskDemo
         public TaskOfTicks(int maxTaskCount) : base(maxTaskCount)
         { }
 
-        protected override uint AutoRefreshTriggerCount => 2;
-
         protected override IList<string> GetTaskUIDList(int top)
         {
             System.Threading.Thread.Sleep(1000);

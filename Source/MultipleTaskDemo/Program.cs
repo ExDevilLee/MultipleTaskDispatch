@@ -15,7 +15,7 @@ namespace MultipleTaskDemo
         {
             TaskManagerByThread mgr = new TaskManagerByThread(20)
             {
-                IntervalOfAutoRefreshSeconds = 30,
+                IntervalOfAutoRefreshSeconds = 10,
                 IntervalOfTaskMilliseconds = 200
             };
             mgr.RegisterTask(new TaskOfGuid(5), new TaskOfHashCode(5), new TaskOfTicks(10), new TaskOfCompoundKey(10));

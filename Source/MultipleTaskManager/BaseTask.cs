@@ -29,17 +29,21 @@ namespace MultipleTaskManager
         {
             this.MaxTaskCount = maxTaskCount;
             m_StopwatchForRefresh.Start();
-            ThreadPool.QueueUserWorkItem(x => { this.RefreshTaskUIDList(); });
+            ThreadPool.QueueUserWorkItem(x => { this.RefreshTaskUIDList(true); });
         }
 
         protected abstract IList<TKey> GetTaskUIDList(int top);
 
-        protected virtual uint MinRefreshMilliseconds => 2000;
+        protected virtual uint MinRefreshMilliseconds => 1000;
         public void RefreshTaskUIDList()
+        {
+            this.RefreshTaskUIDList(false);
+        }
+        private void RefreshTaskUIDList(bool init)
         {
             lock (m_Locker)
             {
-                if (m_StopwatchForRefresh.Elapsed.TotalMilliseconds <= this.MinRefreshMilliseconds) return;
+                if (!init && m_StopwatchForRefresh.Elapsed.TotalMilliseconds <= this.MinRefreshMilliseconds) return;
 
                 IList<TKey> taskList = this.GetTaskUIDList(this.MaxTaskCount);
                 if (null == taskList || taskList.Count == 0)
@@ -59,16 +63,11 @@ namespace MultipleTaskManager
             }
         }
 
-        protected virtual uint AutoRefreshTriggerCount => 1;
         protected virtual bool TryGetNextTaskUID(out TKey taskUID)
         {
             taskUID = default(TKey);
             lock (m_Locker)
             {
-                if (m_TaskUIDList.Count <= this.AutoRefreshTriggerCount)
-                {
-                    ThreadPool.QueueUserWorkItem(x => { this.RefreshTaskUIDList(); });
-                }
                 if (m_TaskUIDList.Count == 0) return false;
 
                 bool hasTask = false;
@@ -106,7 +105,11 @@ namespace MultipleTaskManager
         {
             lock (m_Locker)
             {
-                if (m_TaskUIDList.Count == 0) return;
+                if (m_TaskUIDList.Count == 0)
+                {
+                    ThreadPool.QueueUserWorkItem(x => { this.RefreshTaskUIDList(); });
+                    return;
+                }
                 if (m_TaskUIDList.ContainsKey(taskUID)) m_TaskUIDList.Remove(taskUID);
             }
         }
