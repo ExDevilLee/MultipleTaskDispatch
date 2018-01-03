@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Linq;
@@ -10,6 +11,12 @@ namespace MultipleTaskManager
         private readonly object m_Locker = new object();
         private IDictionary<TKey, bool> m_TaskUIDList = new Dictionary<TKey, bool>();
         private static bool TKeyIsValueType => typeof(TKey).IsValueType;
+
+        public event EventHandler TaskAdded;
+        protected virtual void OnTaskAdded()
+        {
+            this.TaskAdded?.Invoke(this, new EventArgs());
+        }
 
         public abstract string TaskTypeName { get; }
         public int MaxTaskCount { get; }
@@ -52,13 +59,16 @@ namespace MultipleTaskManager
                     return;
                 }
 
+                bool hasNewTask = false;
                 foreach (var uid in taskList)
                 {
                     if (!TKeyIsValueType && null == uid) continue;
                     if (m_TaskUIDList.ContainsKey(uid)) continue;
                     m_TaskUIDList.Add(uid, false);
+                    hasNewTask = true;
                     if (m_TaskUIDList.Count >= this.MaxTaskCount) break;
                 }
+                if (hasNewTask) this.OnTaskAdded();
                 m_StopwatchForRefresh.Restart();
             }
         }
