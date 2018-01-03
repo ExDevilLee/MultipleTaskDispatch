@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace MultipleTaskManager
 {
-    public class TaskManager
+    public class TaskManagerByThread
     {
         private object m_Locker = new object();
         private int m_ThreadCount;
@@ -34,12 +34,12 @@ namespace MultipleTaskManager
             }
         }
 
-        public TaskManager(int threadCount)
+        public TaskManagerByThread(int threadCount)
         {
             if (threadCount < 1) threadCount = 1;
             m_ThreadCount = threadCount;
         }
-        public TaskManager(int threadCount, params ITask[] tasks)
+        public TaskManagerByThread(int threadCount, params ITask[] tasks)
             : this(threadCount)
         {
             this.RegisterTask(tasks);
