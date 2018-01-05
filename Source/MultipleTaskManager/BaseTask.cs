@@ -26,7 +26,7 @@ namespace MultipleTaskManager
             {
                 lock (m_Locker)
                 {
-                    return m_TaskUIDList.Where(x => !x.Value).ToArray().Length;
+                    return m_TaskUIDList.Count(x => !x.Value);
                 }
             }
         }
