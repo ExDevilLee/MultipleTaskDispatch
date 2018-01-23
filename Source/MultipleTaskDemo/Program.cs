@@ -57,7 +57,7 @@ namespace MultipleTaskDemo
 
         private static void TestOfTaskManagerByThreadPool(ITask[] task)
         {
-            TaskManagerByThreadPool mgr = new TaskManagerByThreadPool()
+            TaskManagerByThreadPool mgr = new TaskManagerByThreadPool(10)
             {
                 IntervalOfAutoRefreshSeconds = 10
             };

@@ -21,7 +21,15 @@ namespace MultipleTaskManager
             }
         }
 
-        public TaskManagerByThreadPool(params ITask[] tasks)
+        public TaskManagerByThreadPool(int maxThreadCount)
+        {
+            if (maxThreadCount < 1) maxThreadCount = 1;
+
+            ThreadPool.SetMinThreads(1, 1);
+            ThreadPool.SetMaxThreads(maxThreadCount, maxThreadCount);
+        }
+        public TaskManagerByThreadPool(int maxThreadCount, params ITask[] tasks)
+            : this(maxThreadCount)
         {
             this.RegisterTask(tasks);
         }
